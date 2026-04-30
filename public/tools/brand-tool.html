@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brand & Budget Tool — Happy Horizon</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ─── */
+:root {
+  --navy:#070733; --yellow:#fce512; --white:#fff;
+  --grey:#f2f4f6; --grey2:#e4e7eb; --grey3:#c8cdd6;
+  --muted:#6b7280; --text:#1a1d2e;
+  --red:#dc2626; --amber:#d97706; --green:#16a34a;
+  --red-bg:#fef2f2; --amb-bg:#fffbeb; --grn-bg:#f0fdf4;
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Montserrat',sans-serif;background:var(--grey);color:var(--text);min-height:100vh;}
+
+/* ─── PRINT ─── */
+@media print {
+  .no-print{display:none!important;}
+  .print-only{display:block!important;}
+  body{background:white;}
+  .page-break{page-break-before:always;}
+  .print-card{border:1px solid #ddd;padding:16px;margin-bottom:12px;}
+  section{break-inside:avoid;}
+}
+.print-only{display:none;}
+
+/* ─── HEADER ─── */
+.hdr{background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 36px;height:52px;position:sticky;top:0;z-index:200;}
+.hdr-brand{display:flex;align-items:center;gap:10px;}
+.hh-mark{width:24px;height:24px;background:var(--yellow);display:flex;align-items:center;justify-content:center;}
+.hh-mark span{font-size:9px;font-weight:900;color:var(--navy);}
+.hdr-t{font-size:12px;font-weight:700;color:#fff;}
+.hdr-s{font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.08em;}
+.hdr-actions{display:flex;gap:8px;align-items:center;}
+.hdr-pill{font-size:9px;font-weight:700;background:var(--yellow);color:var(--navy);padding:3px 10px;letter-spacing:.08em;cursor:pointer;border:none;font-family:'Montserrat',sans-serif;transition:background .15s;}
+.hdr-pill:hover{background:#f0d800;}
+.hdr-pill.ghost{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.7);}
+.hdr-pill.ghost:hover{border-color:var(--yellow);color:var(--yellow);}
+
+/* ─── NAV TABS ─── */
+.nav-tabs{background:var(--white);border-bottom:1px solid var(--grey2);display:flex;position:sticky;top:52px;z-index:150;}
+.nav-tab{padding:14px 28px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.nav-tab.active{color:var(--navy);border-bottom-color:var(--yellow);}
+.nav-tab.locked{color:var(--grey3);cursor:not-allowed;}
+.nav-tab .tab-num{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--grey2);font-size:8px;font-weight:900;margin-right:6px;transition:all .2s;}
+.nav-tab.active .tab-num{background:var(--yellow);color:var(--navy);}
+.nav-tab.done .tab-num{background:var(--navy);color:var(--yellow);}
+
+/* ─── PAGES ─── */
+.page{display:none;animation:fadeIn .3s var(--ease);}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ─── DIAGNOSE PAGE ─── */
+.diag-shell{max-width:1080px;margin:0 auto;padding:36px 24px;}
+.diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:calc(100vh - 120px);}
+.diag-left{background:var(--white);padding:44px 40px;border-right:1px solid var(--grey2);}
+.diag-right{background:var(--grey);padding:36px 32px;display:flex;flex-direction:column;}
+
+.intro h1{font-size:clamp(20px,2.4vw,30px);font-weight:900;color:var(--navy);line-height:1.15;letter-spacing:-.025em;margin-bottom:10px;}
+.intro h1 .accent{color:var(--red);}
+.intro p{font-size:12.5px;color:var(--muted);line-height:1.7;margin-bottom:32px;}
+
+/* Progress */
+.progress{display:flex;gap:4px;margin-bottom:32px;}
+.prog-seg{height:3px;flex:1;background:var(--grey2);transition:background .4s;}
+.prog-seg.done{background:var(--navy);}
+.prog-seg.active{background:var(--yellow);}
+
+/* Questions */
+.q-block{margin-bottom:28px;opacity:0;transform:translateY(12px);transition:opacity .35s var(--ease),transform .35s var(--ease);pointer-events:none;}
+.q-block.visible{opacity:1;transform:none;pointer-events:all;}
+.q-step{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:flex;align-items:center;gap:8px;}
+.q-step::before{content:'';width:14px;height:2px;background:var(--yellow);flex-shrink:0;}
+.q-text{font-size:clamp(14px,1.6vw,17px);font-weight:800;color:var(--navy);line-height:1.35;margin-bottom:5px;letter-spacing:-.01em;}
+.q-sub{font-size:11.5px;color:var(--muted);line-height:1.6;margin-bottom:14px;}
+.choices{display:flex;flex-direction:column;gap:7px;}
+.choice{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:var(--white);border:1.5px solid var(--grey2);cursor:pointer;text-align:left;width:100%;font-family:'Montserrat',sans-serif;transition:all .15s var(--ease);}
+.choice:hover{border-color:var(--navy);background:#fafafa;}
+.choice.selected{border-left:3px solid var(--yellow);border-color:var(--navy);background:#fffde8;}
+.choice-icon{font-size:17px;flex-shrink:0;line-height:1;margin-top:1px;}
+.choice-main{font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:2px;line-height:1.3;}
+.choice-sub{font-size:11px;color:var(--muted);line-height:1.45;}
+
+/* Number inputs */
+.num-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.num-lbl{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;}
+.num-wrap{position:relative;}
+.num-pre{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:700;color:var(--muted);pointer-events:none;}
+.num-suf{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:var(--muted);pointer-events:none;}
+input[type=number]{width:100%;padding:11px 14px 11px 26px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;color:var(--navy);background:var(--grey);border:1.5px solid var(--grey2);outline:none;-moz-appearance:textfield;transition:border-color .2s;}
+input[type=number].no-pre{padding-left:14px;}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+input[type=number]:focus{border-color:var(--navy);background:var(--white);}
+.next-btn{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:12px 22px;background:var(--navy);color:var(--yellow);font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;font-family:'Montserrat',sans-serif;border:none;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .25s,background .15s;}
+.next-btn.ready{opacity:1;pointer-events:all;}
+.next-btn:hover{background:#0d1054;}
+
+/* Right panel */
+.result-idle{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:32px;}
+.result-idle-icon{font-size:36px;opacity:.18;}
+.result-idle p{font-size:12.5px;color:var(--muted);line-height:1.65;max-width:240px;}
+.result-live{display:none;flex-direction:column;flex:1;}
+.result-live.show{display:flex;}
+
+.verdict{padding:20px 24px;flex-shrink:0;}
+.verdict.critical{background:var(--red);}
+.verdict.warning{background:#92400e;}
+.verdict.healthy{background:var(--navy);}
+.verdict-tag{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;}
+.verdict-title{font-size:15px;font-weight:900;color:#fff;line-height:1.25;letter-spacing:-.01em;}
+
+.the-num{background:var(--white);padding:20px 24px;border-bottom:1px solid var(--grey2);flex-shrink:0;display:none;}
+.the-num.show{display:block;}
+.num-eye{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.num-big{font-size:clamp(30px,3.5vw,44px);font-weight:900;color:var(--red);line-height:1;letter-spacing:-.03em;margin-bottom:5px;}
+.num-big.positive{color:var(--green);}
+.num-sub{font-size:11px;color:var(--muted);line-height:1.55;}
+
+.findings-wrap{flex:1;padding:16px 24px;display:flex;flex-direction:column;gap:9px;overflow-y:auto;}
+.finding{background:var(--white);padding:14px 16px;border-left:3px solid var(--grey2);}
+.finding.crit{border-left-color:var(--red);background:var(--red-bg);}
+.finding.warn{border-left-color:var(--amber);background:var(--amb-bg);}
+.finding.ok{border-left-color:var(--green);background:var(--grn-bg);}
+.finding-head{font-size:12px;font-weight:800;color:var(--navy);margin-bottom:4px;line-height:1.3;}
+.finding.crit .finding-head{color:var(--red);}
+.finding-text{font-size:11px;color:#374151;line-height:1.65;}
+.finding-text strong{font-weight:700;color:var(--navy);}
+.finding.crit .finding-text strong{color:var(--red);}
+.finding-src{font-size:9.5px;color:var(--muted);margin-top:5px;}
+
+.diag-cta{background:var(--navy);padding:20px 24px;flex-shrink:0;border-top:3px solid var(--yellow);display:none;}
+.diag-cta.show{display:block;}
+.cta-eye{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px;}
+.cta-title{font-size:13px;font-weight:800;color:#fff;line-height:1.4;margin-bottom:12px;}
+.cta-btn{display:inline-flex;align-items:center;gap:6px;padding:11px 20px;background:var(--yellow);color:var(--navy);font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;font-family:'Montserrat',sans-serif;border:none;cursor:pointer;transition:background .15s;}
+.cta-btn:hover{background:#f0d800;}
+.cta-note{font-size:10px;color:rgba(255,255,255,.35);margin-top:8px;line-height:1.5;}
+
+/* ─── SIMULATOR PAGE ─── */
+.sim-shell{max-width:1100px;margin:0 auto;padding:36px 24px 60px;}
+.sim-header{margin-bottom:28px;}
+.sim-header h2{font-size:clamp(18px,2vw,26px);font-weight:900;color:var(--navy);letter-spacing:-.02em;margin-bottom:6px;}
+.sim-header p{font-size:12.5px;color:var(--muted);line-height:1.6;max-width:600px;}
+
+.sim-grid{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start;}
+
+/* Sim inputs card */
+.sim-inputs{background:var(--white);padding:28px;}
+.sim-section-title{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.sim-section-title::before{content:'';width:14px;height:2px;background:var(--yellow);}
+.sim-section-title:not(:first-of-type){margin-top:22px;}
+
+/* Custom slider */
+.slider-field{margin-bottom:18px;}
+.slider-field:last-child{margin-bottom:0;}
+.slider-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.slider-name{font-size:11px;font-weight:700;color:var(--navy);letter-spacing:.03em;}
+.slider-val{font-size:11px;font-weight:800;background:var(--navy);color:var(--yellow);padding:2px 9px;min-width:56px;text-align:center;}
+.slider-hint{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.45;}
+input[type=range].sim-range{-webkit-appearance:none;width:100%;height:4px;background:var(--grey2);outline:none;cursor:pointer;}
+input[type=range].sim-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--navy);cursor:pointer;border:3px solid var(--yellow);transition:transform .15s;}
+input[type=range].sim-range::-webkit-slider-thumb:hover{transform:scale(1.2);}
+
+/* Split visual */
+.split-bar{display:flex;height:36px;overflow:hidden;margin-bottom:8px;}
+.split-b{background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--yellow);font-size:11px;font-weight:800;transition:width .4s var(--ease);white-space:nowrap;overflow:hidden;}
+.split-p{background:var(--grey2);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;font-weight:700;transition:all .4s var(--ease);white-space:nowrap;overflow:hidden;flex:1;}
+.split-p.warn{background:#fde68a;color:var(--navy);}
+.split-p.crit{background:#fecaca;color:var(--red);}
+
+/* Sim results */
+.sim-results{display:flex;flex-direction:column;gap:16px;}
+
+/* Impact scorecard */
+.scorecard{background:var(--white);padding:24px;}
+.scorecard-title{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.scorecard-title::before{content:'';width:14px;height:2px;background:var(--yellow);}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.metric{background:var(--grey);padding:14px 12px;}
+.metric.highlight{background:var(--navy);}
+.metric-val{font-size:22px;font-weight:900;color:var(--navy);line-height:1;margin-bottom:3px;}
+.metric.highlight .metric-val{color:var(--yellow);}
+.metric.pos .metric-val{color:var(--green);}
+.metric.neg .metric-val{color:var(--red);}
+.metric-lbl{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;line-height:1.4;}
+.metric.highlight .metric-lbl{color:rgba(255,255,255,.5);}
+.metric-src{font-size:9px;color:var(--muted);margin-top:4px;font-style:italic;}
+
+/* Timeline */
+.timeline-card{background:var(--white);padding:24px;}
+.timeline{position:relative;margin-top:4px;}
+.timeline::before{content:'';position:absolute;left:16px;top:8px;bottom:8px;width:2px;background:var(--grey2);}
+.tl-item{display:flex;gap:14px;margin-bottom:16px;position:relative;}
+.tl-item:last-child{margin-bottom:0;}
+.tl-dot{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;z-index:1;}
+.tl-dot.done{background:var(--green);color:#fff;}
+.tl-dot.active{background:var(--yellow);color:var(--navy);}
+.tl-dot.future{background:var(--grey2);color:var(--muted);}
+.tl-body{}
+.tl-month{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.tl-title{font-size:12px;font-weight:800;color:var(--navy);margin-bottom:3px;line-height:1.3;}
+.tl-text{font-size:11px;color:var(--muted);line-height:1.55;}
+.tl-text strong{color:var(--navy);font-weight:700;}
+.tl-kpi{display:inline-flex;align-items:center;gap:5px;background:var(--grey);padding:3px 8px;font-size:10px;font-weight:700;color:var(--navy);margin-top:5px;}
+
+/* Comparison chart */
+.chart-card{background:var(--white);padding:24px;}
+.chart-wrap{position:relative;height:160px;margin-top:8px;}
+.chart-canvas{width:100%;height:100%;}
+.chart-legend{display:flex;gap:16px;margin-top:8px;}
+.chart-legend-item{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;color:var(--navy);}
+.chart-legend-swatch{width:10px;height:3px;border-radius:1px;}
+
+/* Playbook */
+.playbook-card{background:var(--white);padding:24px;}
+.pb-phases{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+.pb-phase{border-left:3px solid var(--grey2);padding:14px 16px;cursor:pointer;transition:all .2s;}
+.pb-phase.active{border-left-color:var(--yellow);background:#fffde8;}
+.pb-phase.current{border-left-color:var(--navy);}
+.pb-phase-head{display:flex;align-items:center;justify-content:space-between;}
+.pb-phase-title{font-size:12px;font-weight:800;color:var(--navy);}
+.pb-phase-time{font-size:10px;font-weight:600;color:var(--muted);}
+.pb-phase-body{display:none;margin-top:10px;}
+.pb-phase.active .pb-phase-body{display:block;}
+.pb-step{display:flex;gap:10px;margin-bottom:8px;font-size:11.5px;color:#374151;line-height:1.6;}
+.pb-step:last-child{margin-bottom:0;}
+.pb-step-num{width:18px;height:18px;background:var(--navy);color:var(--yellow);font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.pb-step strong{font-weight:700;color:var(--navy);}
+.pb-kpis{background:var(--grey);padding:10px 12px;margin-top:10px;}
+.pb-kpis-title{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.pb-kpi-list{display:flex;flex-wrap:wrap;gap:6px;}
+.pb-kpi-tag{font-size:10px;font-weight:700;background:var(--white);color:var(--navy);padding:3px 9px;border:1px solid var(--grey2);}
+
+/* Scenario compare */
+.scenario-card{background:var(--navy);padding:24px;}
+.sc-title{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
+.sc-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.sc-col{background:rgba(255,255,255,.07);padding:14px 16px;}
+.sc-col-lbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:8px;}
+.sc-col-val{font-size:20px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px;}
+.sc-col-sub{font-size:10.5px;color:rgba(255,255,255,.5);line-height:1.5;}
+.sc-col.better .sc-col-val{color:var(--yellow);}
+.sc-delta{text-align:center;margin-top:12px;}
+.sc-delta-val{font-size:28px;font-weight:900;color:var(--yellow);letter-spacing:-.02em;}
+.sc-delta-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);margin-top:2px;}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .diag-grid{grid-template-columns:1fr;}
+  .diag-left{border-right:none;border-bottom:1px solid var(--grey2);padding:32px 24px;}
+  .diag-right{padding:24px;}
+  .sim-grid{grid-template-columns:1fr;}
+  .metric-grid{grid-template-columns:1fr 1fr;}
+  .sc-cols{grid-template-columns:1fr;}
+  .num-row{grid-template-columns:1fr;}
+}
+@media(max-width:640px){
+  .hdr{padding:0 20px;}
+  .nav-tab{padding:12px 16px;font-size:9px;}
+  .diag-left,.diag-right{padding:24px 18px;}
+  .sim-shell{padding:24px 16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr no-print">
+  <div class="hdr-brand">
+    <div class="hh-mark"><span>HH</span></div>
+    <div>
+      <div class="hdr-t">Brand & Budget Tool</div>
+      <div class="hdr-s">E-COMMERCE · HAPPY HORIZON</div>
+    </div>
+  </div>
+  <div class="hdr-actions">
+    <button class="hdr-pill ghost" onclick="printReport()" id="print-btn" style="display:none;">⬇ Download rapport</button>
+    <button class="hdr-pill" onclick="contactHH()">Gesprek inplannen</button>
+  </div>
+</header>
+
+<!-- NAV TABS -->
+<nav class="nav-tabs no-print">
+  <div class="nav-tab active" id="tab-diag" onclick="goPage('diag')">
+    <span class="tab-num">1</span>Diagnose
+  </div>
+  <div class="nav-tab locked" id="tab-sim" onclick="goPage('sim')">
+    <span class="tab-num">2</span>Simulator &amp; Playbook
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     PAGE 1: DIAGNOSE
+══════════════════════════════════════ -->
+<div class="page active" id="page-diag">
+<div class="diag-grid">
+
+  <!-- LEFT: VRAGEN -->
+  <div class="diag-left">
+    <div class="intro">
+      <h1>Betaal jij te veel voor je eigen klanten<span class="accent">?</span></h1>
+      <p>Vijf vragen. Eén concreet getal. Daarna: een interactieve simulator die doorrekent wat er verandert als jij de switch maakt.</p>
+    </div>
+
+    <div class="progress">
+      <div class="prog-seg active" id="p0"></div>
+      <div class="prog-seg" id="p1"></div>
+      <div class="prog-seg" id="p2"></div>
+      <div class="prog-seg" id="p3"></div>
+      <div class="prog-seg" id="p4"></div>
+    </div>
+
+    <!-- Q0: Omzet -->
+    <div class="q-block visible" id="q0">
+      <div class="q-step">Vraag 1 van 5</div>
+      <div class="q-text">Hoe groot is jullie e-commerce omzet per jaar?</div>
+      <div class="choices">
+        <button class="choice" onclick="pick('q0','lt500k',this)"><span class="choice-icon">🌱</span><div><div class="choice-main">Minder dan €500K</div><div class="choice-sub">We groeien — brand voelt als luxe</div></div></button>
+        <button class="choice" onclick="pick('q0','500k2m',this)"><span class="choice-icon">📈</span><div><div class="choice-main">€500K – €2M</div><div class="choice-sub">We draaien, maar schalen is duur</div></div></button>
+        <button class="choice" onclick="pick('q0','2m10m',this)"><span class="choice-icon">🏗️</span><div><div class="choice-main">€2M – €10M</div><div class="choice-sub">Performance werkt, maar wordt duurder</div></div></button>
+        <button class="choice" onclick="pick('q0','10mplus',this)"><span class="choice-icon">🏢</span><div><div class="choice-main">Meer dan €10M</div><div class="choice-sub">We zijn volwassen — groei is ons plafond</div></div></button>
+      </div>
+    </div>
+
+    <!-- Q1: Signalen (multi-select) -->
+    <div class="q-block" id="q1">
+      <div class="q-step">Vraag 2 van 5</div>
+      <div class="q-text">Wat herken je in de afgelopen 12 maanden?</div>
+      <div class="q-sub">Je mag meerdere antwoorden selecteren — klik alles aan wat klopt.</div>
+      <div class="choices">
+        <button class="choice" data-val="cpc" onclick="pick('q1','cpc',this)"><span class="choice-icon">💸</span><div><div class="choice-main">Klikken worden duurder</div><div class="choice-sub">CPC stijgt ieder jaar zonder aanwijsbare reden</div></div></button>
+        <button class="choice" data-val="roas" onclick="pick('q1','roas',this)"><span class="choice-icon">📉</span><div><div class="choice-main">ROAS daalt langzaam</div><div class="choice-sub">Dezelfde campagnes leveren steeds minder op</div></div></button>
+        <button class="choice" data-val="plateau" onclick="pick('q1','plateau',this)"><span class="choice-icon">🧱</span><div><div class="choice-main">We zitten vast op een plafond</div><div class="choice-sub">Meer performance-budget levert niets meer op</div></div></button>
+        <button class="choice" data-val="none" onclick="pick('q1','none',this)"><span class="choice-icon">✅</span><div><div class="choice-main">Geen van dit alles</div><div class="choice-sub">Het draait goed — we willen weten of het beter kan</div></div></button>
+      </div>
+      <button class="next-btn" id="btn-q1" onclick="advance(2)">Volgende →</button>
+    </div>
+
+    <!-- Q2: Budget + split -->
+    <div class="q-block" id="q2">
+      <div class="q-step">Vraag 3 van 5</div>
+      <div class="q-text">Wat is jullie totale mediabudget — en hoeveel gaat naar brand?</div>
+
+      <!-- Unmissable explainer -->
+      <div style="margin-bottom:20px;border:1.5px solid var(--grey2);overflow:hidden;">
+        <div style="background:var(--navy);padding:10px 16px;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow);">Wat telt als brand — en wat als performance?</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+
+          <div style="padding:14px 16px;border-right:1px solid var(--grey2);">
+            <div style="font-size:11px;font-weight:800;color:var(--navy);margin-bottom:8px;">🎯 Brand</div>
+            <div style="font-size:11px;color:#374151;line-height:1.6;margin-bottom:10px;">Campagnes gericht op mensen die jouw merk <strong style="color:var(--navy);">nog niet kennen</strong>. Het doel is bereik en bekendheid opbouwen — niet direct een klik of aankoop.</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="font-size:10.5px;color:#374151;padding:5px 8px;background:var(--grn-bg);border-left:2px solid var(--green);">✓ YouTube/video gericht op brede doelgroep</div>
+              <div style="font-size:10.5px;color:#374151;padding:5px 8px;background:var(--grn-bg);border-left:2px solid var(--green);">✓ Meta/TikTok awareness-campagne op koude doelgroep</div>
+              <div style="font-size:10.5px;color:#374151;padding:5px 8px;background:var(--grn-bg);border-left:2px solid var(--green);">✓ Display/programmatic voor bereik</div>
+              <div style="font-size:10.5px;color:#374151;padding:5px 8px;background:var(--grn-bg);border-left:2px solid var(--green);">✓ Out-of-home, radio, podcast</div>
+            </div>
+          </div>
+
+          <div style="padding:14px 16px;">
+            <div style="font-size:11px;font-weight:800;color:var(--navy);margin-bottom:8px;">⚡ Performance / activatie</div>
+            <div style="font-size:11px;color:#374151;line-height:1.6;margin-bottom:10px;">Campagnes gericht op mensen die <strong style="color:var(--navy);">al interesse hebben</strong>. Het doel is converteren — klik, aankoop, lead.</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="font-size:10.5px;color:#374151;padding:5px 8px;background:var(--red-bg);border-left:2px solid var(--red);">✗ Google Search (branded én non-branded)</div>
+              <div style="font-size:10.5px;color:#374151;padding:5px 8px;background:var(--red-bg);border-left:2px solid var(--red);">✗ Google Shopping / PMAX</div>
+              <div style="font-size:10.5px;color:#374151;padding:5px 8px;background:var(--red-bg);border-left:2px solid var(--red);">✗ Retargeting op websitebezoekers</div>
+              <div style="font-size:10.5px;color:#374151;padding:5px 8px;background:var(--red-bg);border-left:2px solid var(--red);">✗ Meta/TikTok conversie- of catalogus-campagne</div>
+            </div>
+          </div>
+
+        </div>
+        <div style="padding:10px 16px;background:#fffde8;border-top:1px solid var(--grey2);font-size:10.5px;color:#374151;line-height:1.55;">
+          <strong style="color:var(--navy);">Het gaat om de doelstelling, niet het platform.</strong> Een Meta-campagne kan brand zijn (broad video op koude doelgroep) of performance (retargeting op winkelmandje). Branded search telt altijd als performance — ook al staat je eigen merknaam erin.
+        </div>
+      </div>
+
+      <div class="num-row">
+        <div>
+          <div class="num-lbl">Mediabudget per jaar</div>
+          <div class="num-wrap"><span class="num-pre">€</span><input type="number" id="in-budget" placeholder="250000" min="0" oninput="onNum()"></div>
+        </div>
+        <div>
+          <div class="num-lbl">Waarvan naar brand (%)</div>
+          <div class="num-wrap"><input type="number" id="in-brand" class="no-pre" placeholder="30" min="0" max="100" oninput="onNum()"><span class="num-suf">%</span></div>
+          <div style="font-size:10px;color:var(--muted);margin-top:5px;line-height:1.5;">Schatting is prima. Twijfel je? Gooi alles wat niet op awareness gericht is onder performance.</div>
+        </div>
+      </div>
+      <button class="next-btn" id="btn-q2" onclick="advance(3)">Volgende →</button>
+    </div>
+
+    <!-- Q3: Awareness -->
+    <div class="q-block" id="q3">
+      <div class="q-step">Vraag 4 van 5</div>
+      <div class="q-text">Hoeveel mensen in jullie doelgroep kennen het merk?</div>
+      <div class="choices">
+        <button class="choice" onclick="pick('q3','low',this)"><span class="choice-icon">🔇</span><div><div class="choice-main">Weinig — onder de 20%</div><div class="choice-sub">De meeste potentiële klanten kennen ons niet</div></div></button>
+        <button class="choice" onclick="pick('q3','mid',this)"><span class="choice-icon">📢</span><div><div class="choice-main">Redelijk — 20 tot 40%</div><div class="choice-sub">Bekend, maar lang niet voor iedereen</div></div></button>
+        <button class="choice" onclick="pick('q3','high',this)"><span class="choice-icon">📣</span><div><div class="choice-main">Goed — boven de 40%</div><div class="choice-sub">Bekende naam in onze categorie</div></div></button>
+      </div>
+    </div>
+
+    <!-- Q4: Organisch -->
+    <div class="q-block" id="q4">
+      <div class="q-step">Vraag 5 van 5</div>
+      <div class="q-text">Wat zou er gebeuren als jullie morgen alle betaalde ads uitzetten?</div>
+      <div class="choices">
+        <button class="choice" onclick="pick('q4','crash',this)"><span class="choice-icon">💣</span><div><div class="choice-main">Omzet keldert direct</div><div class="choice-sub">Vrijwel alles komt via betaalde ads</div></div></button>
+        <button class="choice" onclick="pick('q4','dip',this)"><span class="choice-icon">📊</span><div><div class="choice-main">Flinke dip, maar niet nul</div><div class="choice-sub">Er is organische vraag, maar we zijn afhankelijk</div></div></button>
+        <button class="choice" onclick="pick('q4','fine',this)"><span class="choice-icon">🏔️</span><div><div class="choice-main">We overleven het redelijk</div><div class="choice-sub">Genoeg organische vraag en loyaliteit</div></div></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: LIVE DIAGNOSE -->
+  <div class="diag-right">
+    <div class="result-idle" id="idle">
+      <div class="result-idle-icon">🔍</div>
+      <p>Jouw diagnose verschijnt hier terwijl je de vragen beantwoordt.</p>
+    </div>
+
+    <div class="result-live" id="live">
+      <div class="verdict" id="verdict">
+        <div class="verdict-tag" id="vtag">Diagnose</div>
+        <div class="verdict-title" id="vtitle">—</div>
+      </div>
+      <div class="the-num" id="thenum">
+        <div class="num-eye" id="neye">Geschat jaarlijks omzetverlies</div>
+        <div class="num-big" id="nbig">—</div>
+        <div class="num-sub" id="nsub">—</div>
+      </div>
+      <div class="findings-wrap" id="findings"></div>
+      <div class="diag-cta" id="dcta">
+        <div class="cta-eye">Volgende stap</div>
+        <div class="cta-title" id="cta-title">—</div>
+        <button class="cta-btn" onclick="openSimulator()">Bekijk jouw transitieplan en simulator →</button>
+        <div class="cta-note">Inclusief interactieve scenario-berekeningen en persoonlijk 12-maanden-plan</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 2: SIMULATOR + PLAYBOOK
+══════════════════════════════════════ -->
+<div class="page" id="page-sim">
+<div class="sim-shell">
+
+  <div class="sim-header">
+    <h2 id="sim-title">Wat als jij de switch maakt?</h2>
+    <p id="sim-sub">Schuif de sliders en zie live wat er verandert in de penalty, de tijdlijn en het verwachte rendement. Gebaseerd op WARC, Fospha en Binet & Field data over 1.000+ merken.</p>
+  </div>
+
+  <div class="sim-grid">
+
+    <!-- INPUTS -->
+    <div class="sim-inputs">
+
+      <div class="sim-section-title">Uit jouw diagnose</div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--grey);">
+          <span style="font-size:11px;font-weight:700;color:var(--navy);">Jaarlijkse omzet</span>
+          <span style="font-size:12px;font-weight:800;background:var(--navy);color:var(--yellow);padding:2px 10px;" id="disp-rev">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--grey);">
+          <span style="font-size:11px;font-weight:700;color:var(--navy);">Mediabudget</span>
+          <span style="font-size:12px;font-weight:800;background:var(--navy);color:var(--yellow);padding:2px 10px;" id="disp-bud">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--grey);">
+          <span style="font-size:11px;font-weight:700;color:var(--navy);">Huidige brand-split</span>
+          <span style="font-size:12px;font-weight:800;background:var(--navy);color:var(--yellow);padding:2px 10px;" id="disp-cur">—</span>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:20px;padding:0 2px;">Wil je andere waarden proberen? Ga terug naar stap 1.</div>
+
+      <div class="sim-section-title">Scenario instellen</div>
+
+      <div class="slider-field">
+        <div class="slider-label">
+          <span class="slider-name">Nieuwe brand-allocatie</span>
+          <span class="slider-val" id="sl-new">55%</span>
+        </div>
+        <div class="split-bar" style="margin-bottom:8px;">
+          <div class="split-b" id="new-b" style="width:55%;background:var(--yellow);color:var(--navy)">55% B</div>
+          <div class="split-p" id="new-p" style="width:45%">45% P</div>
+        </div>
+        <input type="range" class="sim-range" min="0" max="100" step="5" value="55" id="sl-target" oninput="simUpdate()">
+        <div class="slider-hint">Sleep naar de gewenste nieuwe verhouding</div>
+      </div>
+
+      <div class="slider-field">
+        <div class="slider-label">
+          <span class="slider-name">Transitiesnelheid</span>
+          <span class="slider-val" id="sl-speed">Geleidelijk</span>
+        </div>
+        <input type="range" class="sim-range" min="1" max="3" step="1" value="2" id="sl-speed-r" oninput="simUpdate()">
+        <div class="slider-hint">Snel (6 mnd) · Geleidelijk (12 mnd) · Voorzichtig (18 mnd)</div>
+      </div>
+
+      <div style="margin-top:20px;padding:14px 16px;background:var(--grey);border-left:3px solid var(--yellow);">
+        <div style="font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Methodologie</div>
+        <div style="font-size:10.5px;color:var(--muted);line-height:1.55;">Berekeningen op basis van mediane data: WARC Multiplier Effect 2025 (1.000+ merken), Fospha Glow 2024, Binet & Field IPA-databank. Resultaten zijn richtinggevend — werkelijke uitkomsten variëren per merk, categorie en uitvoering.</div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="sim-results">
+
+      <!-- Scenario vergelijking -->
+      <div class="scenario-card no-print">
+        <div class="sc-title">Scenario vergelijking — huidig vs. nieuw</div>
+        <div class="sc-cols">
+          <div class="sc-col">
+            <div class="sc-col-lbl">Huidige situatie</div>
+            <div class="sc-col-val" id="sc-cur-pen">—</div>
+            <div class="sc-col-sub" id="sc-cur-sub">Jaarlijkse penalty</div>
+          </div>
+          <div class="sc-col better">
+            <div class="sc-col-lbl">Na verschuiving</div>
+            <div class="sc-col-val" id="sc-new-pen">—</div>
+            <div class="sc-col-sub" id="sc-new-sub">Verwachte penalty na optimalisatie</div>
+          </div>
+        </div>
+        <div class="sc-delta">
+          <div class="sc-delta-val" id="sc-delta">—</div>
+          <div class="sc-delta-lbl" id="sc-delta-lbl">Jaarlijkse vrijgespeelde waarde bij succesvolle transitie</div>
+        </div>
+      </div>
+
+      <!-- KPI scorecard -->
+      <div class="scorecard">
+        <div class="scorecard-title">Impact op kernmetrics</div>
+        <div class="metric-grid">
+          <div class="metric highlight">
+            <div class="metric-val" id="m-mer">—</div>
+            <div class="metric-lbl">MER uplift verwacht<br>na 10 maanden</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val" id="m-cac">—</div>
+            <div class="metric-lbl">Verwachte CAC-reductie<br>(brand equity effect)</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val" id="m-ms">—</div>
+            <div class="metric-lbl">Marktaandeel-<br>groei per jaar</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val" id="m-t1">—</div>
+            <div class="metric-lbl">Eerste leading<br>signals zichtbaar</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val" id="m-t2">—</div>
+            <div class="metric-lbl">CFO-waardige<br>ROI uplift</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val" id="m-2yr">—</div>
+            <div class="metric-lbl">Cumulatieve waarde<br>over 2 jaar</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;font-size:10px;color:var(--muted);line-height:1.5;">
+          MER = Marketing Efficiency Ratio (totale omzet / totale mediabudget) · Bron: Fospha Glow 2024 (≥5% upper funnel → +22% MER, ≥10% → ~2× MER) · BERA.ai: 23% lagere CAC bij hoge brand equity
+        </div>
+      </div>
+
+      <!-- Tijdlijn -->
+      <div class="timeline-card">
+        <div class="scorecard-title">Jouw transitietijdlijn</div>
+        <div class="timeline" id="timeline"><!-- JS --></div>
+      </div>
+
+      <!-- Playbook -->
+      <div class="playbook-card">
+        <div class="scorecard-title">Jouw persoonlijke playbook</div>
+        <div class="pb-phases" id="pb-phases"><!-- JS --></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- PRINT TEMPLATE (hidden, shown only on print) -->
+<div class="print-only" id="print-report">
+  <div style="padding:40px;max-width:800px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;border-bottom:3px solid #070733;padding-bottom:20px;">
+      <div style="width:32px;height:32px;background:#070733;display:flex;align-items:center;justify-content:center;"><span style="color:#fce512;font-size:12px;font-weight:900;">HH</span></div>
+      <div><div style="font-size:16px;font-weight:900;color:#070733;">Brand & Budget Rapport</div><div style="font-size:10px;color:#6b7280;">Happy Horizon · E-commerce · Gegenereerd op <span id="pr-date"></span></div></div>
+    </div>
+    <div id="pr-content"><!-- filled by JS --></div>
+    <div style="margin-top:40px;padding-top:16px;border-top:1px solid #e4e7eb;font-size:10px;color:#6b7280;line-height:1.6;">
+      Dit rapport is gegenereerd door de Happy Horizon Brand & Budget Tool op basis van de ingevulde gegevens. Alle berekeningen zijn indicatief en gebaseerd op mediane benchmarkdata van WARC (1.000+ merken), Fospha Glow, Binet & Field IPA-databank, Analytic Partners ROI Genome en BERA.ai. Werkelijke resultaten variëren per merk, categorie en uitvoering. <strong style="color:#070733;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1a727b7676755a727b6a6a637275687360757434797577">[email&#160;protected]</a></strong>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════
+   STATE
+══════════════════════════════ */
+const S = {
+  rev:null, sigs:[], budget:null, brand:null, aware:null, org:null,
+  diagnosed:false
+};
+const REV_MAP = {lt500k:250000,'500k2m':1250000,'2m10m':6000000,'10mplus':25000000};
+
+/* ══════════════════════════════
+   FORMAT HELPERS
+══════════════════════════════ */
+const fmt = n => n>=1e6?'€'+(n/1e6).toFixed(1)+'M':n>=1000?'€'+Math.round(n/1000)+'K':'€'+Math.round(n);
+const fmtPct = (v,d=0) => (v>=0?'+':'')+v.toFixed(d)+'%';
+const fmtM2 = v => v>=1e6?'€'+(v/1e6).toFixed(1)+'M':v>=1000?'€'+Math.round(v/1000)+'K':'€'+Math.round(v);
+
+/* ══════════════════════════════
+   CORE CALCULATION ENGINE
+══════════════════════════════ */
+function calcPenalty(brandPct, rev) {
+  const recBrand = 60;
+  const gap = Math.max(0, recBrand - brandPct);
+  const penPct = Math.min(48, gap / recBrand * 50);
+  return { penPct, penEur: rev * penPct / 100, gap };
+}
+
+function calcMER(brandPct) {
+  // Fospha Glow: <5% upper funnel = no uplift; >=5% = +22%; >=10% = ~+60%; >=20% = ~+90%; >=40% = ~+100%
+  if (brandPct < 5)  return { mer: 0,   merLabel: '+0%' };
+  if (brandPct < 10) return { mer: 22,  merLabel: '+22%' };
+  if (brandPct < 20) return { mer: 60,  merLabel: '+60%' };
+  if (brandPct < 40) return { mer: 85,  merLabel: '+85%' };
+  return               { mer: 100, merLabel: '~+100%' };
+}
+
+function calcCAC(brandPct) {
+  // BERA.ai: 23% lower CAC at high brand equity months
+  // Scale: 0% brand = 0% reduction, 60% brand = ~23% reduction
+  const reduction = Math.min(23, brandPct / 60 * 23);
+  return -Math.round(reduction);
+}
+
+function calcMarketShare(brandPct, rev) {
+  // ESOV model: assume SOV roughly proportional to brand spend allocation
+  // Simple proxy: every 10pp brand above 30% = +0.05% SOM growth per year
+  const above30 = Math.max(0, brandPct - 30);
+  return (above30 / 10 * 0.05).toFixed(2);
+}
+
+function calcTimeline(speed) {
+  // speed: 1=fast(6mnd), 2=gradual(12mnd), 3=careful(18mnd)
+  const t1 = speed === 1 ? 'Maand 2' : speed === 2 ? 'Maand 3' : 'Maand 4';
+  const t2 = speed === 1 ? 'Maand 7' : speed === 2 ? 'Maand 10' : 'Maand 14';
+  const t3 = speed === 1 ? 'Maand 12' : speed === 2 ? 'Maand 18' : 'Maand 24';
+  return {t1, t2, t3};
+}
+
+/* ══════════════════════════════
+   DIAGNOSE INTERACTIONS
+══════════════════════════════ */
+function pick(q, val, el) {
+  if (q === 'q1') {
+    // Multi-select — toggle individual choices, except 'none' is exclusive
+    if (val === 'none') {
+      // Selecting 'none' deselects everything else
+      el.closest('.choices').querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      S.sigs = ['none'];
+    } else {
+      // Deselect 'none' if present
+      el.closest('.choices').querySelectorAll('.choice[data-val="none"]').forEach(c => c.classList.remove('selected'));
+      S.sigs = S.sigs.filter(s => s !== 'none');
+      // Toggle this choice
+      if (el.classList.contains('selected')) {
+        el.classList.remove('selected');
+        S.sigs = S.sigs.filter(s => s !== val);
+      } else {
+        el.classList.add('selected');
+        if (!S.sigs.includes(val)) S.sigs.push(val);
+      }
+    }
+    // Show/hide continue button
+    document.getElementById('btn-q1').classList.toggle('ready', S.sigs.length > 0);
+    return;
+  }
+  // Single-select for all other questions
+  el.closest('.choices').querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (q==='q0') { S.rev=val; advance(1); }
+  if (q==='q3') { S.aware=val; advance(4); }
+  if (q==='q4') { S.org=val; runDiagnose(); }
+}
+
+function onNum() {
+  S.budget = parseFloat(document.getElementById('in-budget').value)||null;
+  S.brand  = parseFloat(document.getElementById('in-brand').value);
+  if (S.brand>100) { document.getElementById('in-brand').value=100; S.brand=100; }
+  if (S.brand<0)   { document.getElementById('in-brand').value=0;   S.brand=0; }
+  const ok = S.budget>0 && S.brand!==null && !isNaN(S.brand);
+  document.getElementById('btn-q2').classList.toggle('ready', ok);
+}
+
+function advance(n) {
+  for (let i=0;i<5;i++) {
+    document.getElementById('p'+i).className = 'prog-seg'+(i<n?' done':i===n?' active':'');
+  }
+  const el = document.getElementById('q'+n);
+  if (!el) return;
+  setTimeout(() => {
+    el.classList.add('visible');
+    el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }, 80);
+}
+
+function quickPreview() {
+  if (!S.rev||!S.budget||S.brand===null) return;
+  const rev = REV_MAP[S.rev]||6e6;
+  const {penPct, penEur} = calcPenalty(S.brand, rev);
+  if (penPct < 3) return;
+  showLive();
+  const sev = penPct>25 ? 'critical' : 'warning';
+  setVerdict(sev, penPct>25?'🚨 Kritieke situatie':'⚠️ Aandachtspunten',
+    penPct>25 ? 'Jullie betalen een structurele boete op iedere advertentie-euro.'
+              : 'De motor draait — maar er zit te veel wrijving in de machine.');
+  showNum(penEur, false,
+    `Bij ${S.brand}% brand vs. het optimum van 60% is de geschatte penalty ${Math.round(penPct)}% (WARC, 1.000+ merken).`);
+}
+
+function runDiagnose() {
+  const rev    = REV_MAP[S.rev] || 6e6;
+  const budget = S.budget || rev*0.08;
+  const bp     = S.brand!==null ? S.brand : 30;
+  const {penPct, penEur, gap} = calcPenalty(bp, rev);
+  const restore = budget * (gap/100) * 1.92;
+
+  let sev = 'healthy';
+  if (penPct>25||(S.sigs.some(s=>s!=='none')&&S.aware==='low')||S.org==='crash') sev='critical';
+  else if (penPct>10||S.sigs.includes('cpc')||S.sigs.includes('roas')||S.aware==='low') sev='warning';
+
+  const tags   = {critical:'🚨 Kritieke situatie',warning:'⚠️ Aandachtspunten',healthy:'✅ Gezonde basis'};
+  const titles = {
+    critical:'Jullie betalen een structurele boete op iedere advertentie-euro.',
+    warning:'De motor draait — maar er zit te veel wrijving in de machine.',
+    healthy:'Jullie mix is goed. Dit is het moment om door te groeien.'
+  };
+  setVerdict(sev, tags[sev], titles[sev]);
+  document.getElementById('thenum').classList.add('show');
+
+  if (sev==='healthy') {
+    document.getElementById('neye').textContent = 'Geschat groeipotentieel bij optimale mix';
+    showNum(rev*0.12, true, 'Extra omzet per jaar bij verschuiving naar bewezen optimale mix (Binet & Field, 996 campagnes).');
+  } else {
+    document.getElementById('neye').textContent = 'Geschat jaarlijks omzetverlies door de huidige mix';
+    showNum(penEur, false,
+      `Bij ${bp}% brand vs. optimum 60% is de mediaan penalty ${Math.round(penPct)}% verlies in revenue ROI. Bron: WARC Multiplier Effect 2025.`);
+  }
+
+  // FINDINGS
+  const fs = [];
+
+  // Split
+  if (gap>15) fs.push({c:'crit',h:`${bp}% brand — ${Math.round(gap)}pp onder het optimum`,
+    t:`Binet & Field: voor e-commerce is het bewezen optimum <strong>60% brand / 40% activatie</strong>. Jouw performance penalty: ~${Math.round(penPct)}%. Bovendien: BCG toont dat elke bezuinigde euro op brand <strong>€1,92 kost om terug te winnen</strong>.`,
+    s:'Binet & Field IPA (2018) · WARC 2025 · BCG (2023)'});
+  else if (gap>5) fs.push({c:'warn',h:`Brand ${Math.round(gap)}pp onder optimum — herstelbaar`,
+    t:`Je bent dicht bij het optimum. Maar brand equity erodeert sluipend: gevolgen worden zichtbaar <strong>12–18 maanden ná de oorzaak</strong>. Nu corrigeren is exponentieel goedkoper dan later.`,
+    s:'BCG (2025) · BERA.ai (2024)'});
+  else fs.push({c:'ok',h:'Brand split zit goed — bewaar dit actief',
+    t:`Met ${bp}% brand zit je dicht bij het optimum. Valkuil: bij budgetdruk schuift de split ongemerkt richting performance. Zo begint erosie.`,
+    s:'Binet & Field IPA Databank'});
+
+  const sm = {
+    cpc:    {c:'crit',h:'Stijgende CPC — het klassieke brand-symptoom',t:'<strong>BERA.ai mette 23% lagere cost-per-conversion in maanden met hoge brand equity</strong> (1.600 merken, 4 jaar). CPC stijgt niet omdat platforms duurder worden — het stijgt omdat het merk minder waard is.',s:'BERA.ai (2024)'},
+    roas:   {c:'crit',h:'Dalende ROAS — performance compenseert voor brand',t:'<strong>Analytic Partners: klant die 61% brand-budget naar performance schoof zag −22% performance ROI én −16% totale ROI.</strong> Performance wordt slechter naarmate brand zwakker wordt.',s:'Analytic Partners ROI Genome · WARC 2025'},
+    plateau:{c:'crit',h:'Groeiplateau — de klassieke performance-muur',t:'Slechts <strong>~5% van de markt koopt op elk moment</strong> (95:5-regel). Performance bereikt alleen deze 5%. Brand bereikt de overige 95% — de kopers van morgen.',s:'LinkedIn B2B Institute · Keen Decision Systems (2025)'},
+    none:   {c:'ok',h:'Geen acute signalen',t:'Goed teken. Maar brand equity erodeert sluipend: gevolgen zijn zichtbaar <strong>12–18 maanden ná de oorzaak</strong>. Monitoren blijft cruciaal.',s:'BERA.ai (2024)'}
+  };
+  // Push a finding for each selected signal (skip 'none' if other signals also selected)
+  const sigsToShow = S.sigs.length > 1 ? S.sigs.filter(s => s !== 'none') : S.sigs;
+  sigsToShow.forEach(sig => { if (sm[sig]) fs.push(sm[sig]); });
+
+  const am = {
+    low:  {c:'crit',h:'Lage bekendheid — elke ad werkt zwaarder dan nodig',t:'<strong>Tracksuit × TikTok (2024): merken met 60% awareness behalen 2,86× hogere conversieratio\'s</strong> dan merken met 20%. Bij lage bekendheid doet performance het werk dat brand had moeten doen.',s:'Tracksuit × TikTok "The Awareness Advantage" (2024)'},
+    mid:  {c:'warn',h:'Awareness groeit — elke procent telt hier',t:'Bij 20–40% awareness heeft elke extra procent bekendheid een <strong>disproportioneel groot effect op conversie-efficiency</strong>. Kantar: 1% extra awareness → 0,7% omzetgroei.',s:'Kantar ROI Analyzer'},
+    high: {c:'ok',h:'Hoge awareness — gebruik dit als hefboom',t:'Sterke merken betalen gemiddeld <strong>23% minder per conversie</strong>. Houd dat voordeel actief in stand via consistente brand-investering.',s:'BERA.ai (2024)'}
+  };
+  if (S.aware) fs.push(am[S.aware]);
+
+  const om = {
+    crash: {c:'crit',h:'Volledig afhankelijk van betaald — base sales zijn fragiel',t:'<strong>Ehrenberg-Bass (70 merken, 20 jaar): na 2 jaar zonder brand-advertenties daalt de omzet gemiddeld 25%.</strong> Base sales zijn al uitgehold.',s:'Ehrenberg-Bass · Journal of Advertising Research (2021)'},
+    dip:   {c:'warn',h:'Groeiende afhankelijkheid — organische vraag kalft af',t:'<strong>Gain Theory: retailbank na 2 jaar geen brand → base van 20.000 naar 11.000 leads/maand (−45%)</strong>. Je merkt het pas als het te laat is.',s:'Gain Theory (2023)'},
+    fine:  {c:'ok',h:'Organische basis is gezond',t:'<strong>Airbnb sneed €800M performance weg — 90% van traffic bleef unpaid of direct.</strong> Dat is brand equity. Jullie hebben die basis.',s:'Airbnb annual reports (2020–2022)'}
+  };
+  if (S.org) fs.push(om[S.org]);
+
+  document.getElementById('findings').innerHTML = fs.map(f =>
+    `<div class="finding ${f.c}">
+      <div class="finding-head">${f.h}</div>
+      <div class="finding-text">${f.t}</div>
+      <div class="finding-src">📊 ${f.s}</div>
+    </div>`).join('');
+
+  const ctaTxts = {
+    critical:'Jullie laten aantoonbaar geld liggen. Zie de simulator voor jouw persoonlijke transitieplan.',
+    warning:'Een uur met ons vertelt je exact hoeveel beter het kan — en hoe de transitie zonder omzetgat lukt.',
+    healthy:'Jullie doen het goed. Zie hoe je de huidige basis gebruikt voor de volgende groeifase.'
+  };
+  document.getElementById('cta-title').textContent = ctaTxts[sev];
+  document.getElementById('dcta').classList.add('show');
+
+  showLive();
+  S.diagnosed = true;
+
+  // Unlock simulator tab
+  const simTab = document.getElementById('tab-sim');
+  simTab.classList.remove('locked');
+  simTab.classList.add('done');
+
+  // Set simulator target to a sensible default (current + ~25pp, max 65%)
+  const suggestedTarget = Math.min(65, (S.brand || 30) + 25);
+  document.getElementById('sl-target').value = suggestedTarget;
+  simUpdate();
+
+  document.getElementById('print-btn').style.display = 'block';
+}
+
+/* ══════════════════════════════
+   SIMULATOR
+══════════════════════════════ */
+function simUpdate() {
+  // Values come from diagnose state — not re-entered
+  const rev     = REV_MAP[S.rev] || 6e6;
+  const budget  = S.budget || rev * 0.08;
+  const curBrand = S.brand !== null ? S.brand : 30;
+  const newBrand = +document.getElementById('sl-target').value;
+  const speedVal = +document.getElementById('sl-speed-r').value;
+
+  // Update locked display values
+  document.getElementById('disp-rev').textContent = fmt(rev);
+  document.getElementById('disp-bud').textContent = fmt(budget);
+  document.getElementById('disp-cur').textContent = curBrand + '% brand';
+
+  // Display slider value
+  document.getElementById('sl-new').textContent = newBrand + '%';
+  const speedLabels = {1:'Snel',2:'Geleidelijk',3:'Voorzichtig'};
+  document.getElementById('sl-speed').textContent = speedLabels[speedVal];
+
+  const newBEl = document.getElementById('new-b');
+  const newPEl = document.getElementById('new-p');
+  const newP   = 100 - newBrand;
+  newBEl.style.width = newBrand+'%';
+  newBEl.textContent = newBrand > 8 ? newBrand+'% B' : '';
+  newPEl.style.width = newP+'%';
+  newPEl.textContent = newP > 8 ? newP+'% P' : '';
+
+  // Core calculations
+  const curCalc  = calcPenalty(curBrand, rev);
+  const newCalc  = calcPenalty(newBrand, rev);
+  const curMER   = calcMER(curBrand);
+  const newMER   = calcMER(newBrand);
+  const newCAC   = calcCAC(newBrand);
+  const msGrowth = calcMarketShare(newBrand, rev);
+  const tl       = calcTimeline(speedVal);
+
+  const delta    = curCalc.penEur - newCalc.penEur;
+  const val2yr   = delta * 2 * (newMER.mer / 100 + 1);
+
+  // Scenario comparison
+  document.getElementById('sc-cur-pen').textContent = fmt(curCalc.penEur);
+  document.getElementById('sc-new-pen').textContent = fmt(newCalc.penEur);
+  document.getElementById('sc-delta').textContent   = delta > 0 ? fmt(delta) : '—';
+  document.getElementById('sc-delta-lbl').textContent = delta > 0
+    ? 'Jaarlijkse vrijgespeelde waarde bij succesvolle transitie'
+    : 'Nieuwe allocatie is al beter gebalanceerd';
+
+  // Metrics
+  document.getElementById('m-mer').textContent = newMER.merLabel;
+  document.getElementById('m-cac').textContent = newCAC + '%';
+  document.getElementById('m-ms').textContent  = '+' + msGrowth + '%';
+  document.getElementById('m-t1').textContent  = tl.t1;
+  document.getElementById('m-t2').textContent  = tl.t2;
+  document.getElementById('m-2yr').textContent = delta > 0 ? fmt(Math.round(val2yr)) : '—';
+
+  // Color metrics
+  document.getElementById('m-cac').parentElement.className = 'metric' + (newCAC < -5 ? ' pos' : '');
+  document.getElementById('m-ms').parentElement.className  = 'metric' + (+msGrowth > 0 ? ' pos' : '');
+
+  // Timeline
+  buildTimeline(curBrand, newBrand, tl, speedVal, newMER);
+
+  // Playbook
+  buildPlaybook(curBrand, newBrand, rev, budget, speedVal, delta);
+}
+
+function buildTimeline(cur, tar, tl, speed, newMER) {
+  const speedLabel = {1:'Snel (±6 mnd)',2:'Geleidelijk (±12 mnd)',3:'Voorzichtig (±18 mnd)'}[speed];
+  const shift = tar - cur;
+  const phasePP = speed === 1 ? Math.round(shift/2) : speed === 2 ? Math.round(shift/3) : Math.round(shift/4);
+
+  const items = [
+    {
+      dot:'active', month:'Nu — Maand 1-2',
+      title:'Diagnose & baseline',
+      text:`Incrementaliteitstest op de top 3 performance-kanalen. MMM-analyse om verspilling te identificeren. <strong>Doel: ${Math.abs(phasePP)}pp vrijspelen</strong> van laagst-incrementele kanalen.`,
+      kpi:'Share of Search baseline · Direct traffic baseline · Branded zoekvolume'
+    },
+    {
+      dot:'active', month:tl.t1+' — Eerste signalen verwacht',
+      title:'Eerste signalen zichtbaar',
+      text:`Branded zoekvolume stijgt. Direct traffic neemt toe. Ad recall meet verbetering. <strong>Verspilling in performance gereduceerd</strong>, dit budget verschoven naar brand.`,
+      kpi:'Branded zoekvolume +5-10% · Ad recall · Direct traffic'
+    },
+    {
+      dot:'future', month:tl.t2+' — Operationeel bewijs',
+      title:'CFO-waardige MER uplift',
+      text:`Marketing Efficiency Ratio verbetert meetbaar. Fospha Glow: bij ≥${tar>=20?'20':'10'}% upper funnel verwacht <strong>${newMER.merLabel} MER uplift</strong>. Share of Search stijgt. CAC begint te dalen.`,
+      kpi:'MER +' + (newMER.mer) + '% · CAC reductie · Share of Search'
+    },
+    {
+      dot:'future', month:tl.t3+' — Volledig effect',
+      title:'Langetermijn-multiplier actief',
+      text:`Gain Theory: langetermijneffecten zijn <strong>2-3× de kortetermijneffecten</strong>. Marktaandeel groeit. Base sales versterkt. Performance campagnes presteren beter door sterkere brand equity.`,
+      kpi:'Marktaandeel groei · Base sales · Duurzame CAC-reductie'
+    }
+  ];
+
+  document.getElementById('timeline').innerHTML = items.map(item => `
+    <div class="tl-item">
+      <div class="tl-dot ${item.dot}">→</div>
+      <div class="tl-body">
+        <div class="tl-month">${item.month}</div>
+        <div class="tl-title">${item.title}</div>
+        <div class="tl-text">${item.text}</div>
+        <div class="tl-kpi">📊 Monitor: ${item.kpi}</div>
+      </div>
+    </div>`).join('');
+}
+
+function buildPlaybook(cur, tar, rev, budget, speed, delta) {
+  const shift = tar - cur;
+  const perQ  = Math.round(shift / (speed * 2));
+  const caseStudy = rev > 10e6 ? 'Adidas' : rev > 2e6 ? 'Gousto' : 'Airbnb';
+  const caseDesc  = {
+    Adidas: 'introduceerde econometrie, ontdekte dat 65% van omzet brand-gedreven was, en schoof budget gefaseerd over 4 jaar naar 60% brand.',
+    Gousto: 'ging van 100% performance naar 60% brand via brand-response TV — organische acquisitie groeide van 20% naar 82% in 3 jaar.',
+    Airbnb: 'sneed €800M performance weg en herdefinieerde performance als "chirurgisch instrument" — omzet groeide 40% in jaar 1.'
+  }[caseStudy];
+
+  const phases = [
+    {
+      title: 'Fase 1 — Diagnose & business case',
+      time: 'Maand 1-3',
+      current: cur < 35,
+      steps: [
+        `<strong>Incrementaliteitstest</strong> op de 2-3 hoogste performance-kanalen. Begin met branded search — bij grote merken levert dit nauwelijks incrementeel verkeer op (eBay-experiment: 99,5% van clicks bleef bij stop paid branded search).`,
+        `<strong>Bereken je ESOV</strong>: (Share of Voice − marktaandeel). Elke 10pp positieve ESOV levert ~0,5% marktaandeelgroei per jaar. Dit kwantificeert direct het groeipotentieel van extra brand-investering.`,
+        `<strong>Bouw de CFO-business case</strong> in financieel termen: gebruik het WARC-model (mediaan 90% ROI-uplift bij herbalancering) om 5-jaarsscenario's te modelleren. Leg een Share of Search baseline vast via Google Trends.`
+      ],
+      kpis: ['Share of Search (Google Trends)', 'Incrementaliteitstest resultaten', 'ESOV berekening', 'Branded zoekvolume baseline']
+    },
+    {
+      title: `Fase 2 — Test: verschuif ${Math.abs(perQ)}pp naar brand`,
+      time: 'Maand 3-6',
+      current: cur >= 35 && cur < 50,
+      steps: [
+        `<strong>Verschuif ${Math.abs(perQ)} procentpunt</strong> van het laagst-incrementele performance-budget naar brand (upper funnel Meta, YouTube of CTV). Verschuif nooit meer dan 10-20% per kanaal per cyclus — dit reset algoritme-learningfases.`,
+        `<strong>Lanceer emotioneel, bereiksgericht creatief</strong> op brede, koude doelgroepen. Vermijd retargeting in dit budget. Kwaliteit van creatief vermenigvuldigt het effect — bekroond creatief levert significant meer marktaandeelgroei per euro ESOV.`,
+        `<strong>Stel tripwire-criteria in</strong>: als omzet meer dan 5% daalt gedurende 3 opeenvolgende weken, trigger een herbalancering. Monitor wekelijks: branded zoekvolume, direct traffic, Share of Search. Dit zijn je leading indicators — ze reageren 6-12 maanden eerder dan omzet.`
+      ],
+      kpis: ['Wekelijks: branded zoekvolume', 'Direct traffic trend', 'Ad recall (platform brand lift)', 'CAC vs. vorige periode']
+    },
+    {
+      title: `Fase 3 — Schaal op naar ${tar}% brand`,
+      time: 'Maand 6-12',
+      current: cur >= 50 && cur < 65,
+      steps: [
+        `Als fase 2 geen materiele omzetdaling toont + positieve brand-signalen, <strong>verhoog brand-allocatie met nog eens ${Math.abs(perQ)}pp</strong>. Dit is de "handover zone" — brand-effecten halen performance-effecten in.`,
+        `<strong>Voeg video of CTV toe</strong> als dit nog ontbreekt. Video heeft de hoogste Long-Term Multiplier (2,35×, Gain Theory) en drijft halo-effecten op alle andere kanalen: +33% op search-performance, +31% op paid social.`,
+        `<strong>Referentie: ${caseStudy}</strong> ${caseDesc}`
+      ],
+      kpis: ['MER (totale omzet / totale mediabudget)', 'Share of Search trendlijn', 'Nieuwe klant %', 'Organisch vs. betaald verhouding']
+    },
+    {
+      title: 'Fase 4 — Onderhoud & optimalisatie',
+      time: 'Jaar 2+',
+      current: cur >= 65,
+      steps: [
+        `<strong>Bewaar de ratio bewust</strong>. De meest voorkomende fout: bij tegenvallende kwartaalresultaten wordt performance-budget verhoogd en brand-budget verlaagd — precies het moment waarop brand bescherming biedt.`,
+        `<strong>Vernieuw creatief</strong> elke 18-24 maanden. Fame-campagnes bereiken na 2-3 jaar een verzadigingspunt. Nieuwe creative formats (UGC, creator-content) verlengen de werking.`,
+        `<strong>Continue MMM op kwartaalbasis</strong>. Langetermijn-multipliers (2-3× kortetermijn) zijn nu volledig actief. Monitor marktaandeel als ultieme validatie.`
+      ],
+      kpis: ['Kwartaal MMM update', 'Share of Search vs. marktaandeel', 'Brand equity score (survey)', 'Marktaandeel (externe data)']
+    }
+  ];
+
+  document.getElementById('pb-phases').innerHTML = phases.map((p, i) => `
+    <div class="pb-phase ${p.current ? 'current' : ''}" id="pb-${i}" onclick="togglePhase(${i})">
+      <div class="pb-phase-head">
+        <div class="pb-phase-title">${p.current ? '📍 ' : ''}${p.title}</div>
+        <div class="pb-phase-time">${p.time}</div>
+      </div>
+      <div class="pb-phase-body">
+        ${p.steps.map((s,j) => `<div class="pb-step"><div class="pb-step-num">${j+1}</div><div>${s}</div></div>`).join('')}
+        <div class="pb-kpis">
+          <div class="pb-kpis-title">Monitor in deze fase</div>
+          <div class="pb-kpi-list">${p.kpis.map(k=>`<div class="pb-kpi-tag">${k}</div>`).join('')}</div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Auto-open current phase
+  const currentIdx = phases.findIndex(p => p.current);
+  if (currentIdx >= 0) togglePhase(currentIdx);
+  else togglePhase(0);
+}
+
+function togglePhase(i) {
+  document.querySelectorAll('.pb-phase').forEach((el, j) => {
+    el.classList.toggle('active', j === i);
+  });
+}
+
+/* ══════════════════════════════
+   NAVIGATION
+══════════════════════════════ */
+function goPage(id) {
+  if (id === 'sim' && !S.diagnosed) return;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function openSimulator() {
+  goPage('sim');
+}
+
+/* ══════════════════════════════
+   HELPERS
+══════════════════════════════ */
+function showLive() {
+  document.getElementById('idle').style.display = 'none';
+  document.getElementById('live').classList.add('show');
+}
+
+function showNum(n, pos, sub) {
+  const el = document.getElementById('nbig');
+  el.textContent = fmt(n);
+  el.className = 'num-big' + (pos ? ' positive' : '');
+  document.getElementById('nsub').textContent = sub;
+}
+
+function setVerdict(sev, tag, title) {
+  document.getElementById('verdict').className = 'verdict ' + sev;
+  document.getElementById('vtag').textContent  = tag;
+  document.getElementById('vtitle').textContent = title;
+}
+
+/* ══════════════════════════════
+   PRINT / DOWNLOAD
+══════════════════════════════ */
+function printReport() {
+  document.getElementById('pr-date').textContent = new Date().toLocaleDateString('nl-NL');
+  const rev    = REV_MAP[S.rev] || 6e6;
+  const bp     = S.brand !== null ? S.brand : 30;
+  const {penPct, penEur} = calcPenalty(bp, rev);
+  const newBrand = +document.getElementById('sl-target').value;
+  const {penEur: newPen} = calcPenalty(newBrand, rev);
+  const {merLabel} = calcMER(newBrand);
+  const tl = calcTimeline(+document.getElementById('sl-speed-r').value);
+
+  document.getElementById('pr-content').innerHTML = `
+    <h2 style="font-size:20px;font-weight:900;color:#070733;margin-bottom:4px;">Diagnose samenvatting</h2>
+    <p style="font-size:12px;color:#6b7280;margin-bottom:20px;">Gebaseerd op ingevulde situatie · E-commerce mediamix analyse</p>
+
+    <div class="print-card" style="background:#fef2f2;border-left:4px solid #dc2626;padding:16px;margin-bottom:16px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#dc2626;margin-bottom:6px;">Geschat jaarlijks omzetverlies</div>
+      <div style="font-size:36px;font-weight:900;color:#dc2626;line-height:1;">${fmt(penEur)}</div>
+      <div style="font-size:12px;color:#6b7280;margin-top:4px;">Bij ${bp}% brand-allocatie vs. bewezen optimum van 60% (WARC, 1.000+ merken)</div>
+    </div>
+
+    <h3 style="font-size:14px;font-weight:800;color:#070733;margin:20px 0 10px;">Simulatie: van ${bp}% naar ${newBrand}% brand</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;">
+      <tr style="background:#f2f4f6;"><th style="padding:8px;text-align:left;font-weight:700;">Metric</th><th style="padding:8px;text-align:right;font-weight:700;">Huidig</th><th style="padding:8px;text-align:right;font-weight:700;">Na transitie</th></tr>
+      <tr style="border-bottom:1px solid #e4e7eb;"><td style="padding:8px;">Performance penalty</td><td style="padding:8px;text-align:right;color:#dc2626;font-weight:700;">${fmt(penEur)}</td><td style="padding:8px;text-align:right;color:#16a34a;font-weight:700;">${fmt(newPen)}</td></tr>
+      <tr style="border-bottom:1px solid #e4e7eb;"><td style="padding:8px;">Verwachte MER uplift</td><td style="padding:8px;text-align:right;">—</td><td style="padding:8px;text-align:right;font-weight:700;">${merLabel}</td></tr>
+      <tr style="border-bottom:1px solid #e4e7eb;"><td style="padding:8px;">Eerste signalen</td><td style="padding:8px;text-align:right;">—</td><td style="padding:8px;text-align:right;">${tl.t1}</td></tr>
+      <tr><td style="padding:8px;">CFO-bewijs zichtbaar</td><td style="padding:8px;text-align:right;">—</td><td style="padding:8px;text-align:right;">${tl.t2}</td></tr>
+    </table>
+
+    <h3 style="font-size:14px;font-weight:800;color:#070733;margin:20px 0 10px;">Aanbeveling</h3>
+    <p style="font-size:12px;color:#374151;line-height:1.65;margin-bottom:16px;">
+      De optimale e-commerce brand/performance split is <strong>60/40</strong> (Binet & Field IPA, 996 campagnes). Bij jullie huidige ${bp}% brand-allocatie is de geschatte penalty <strong>${Math.round(penPct)}% verlies in revenue ROI</strong>. Een geleidelijke verschuiving naar ${newBrand}% levert — op basis van mediane benchmarkdata — een MER uplift van <strong>${merLabel}</strong> na ${tl.t2}, met eerste signalen al in ${tl.t1}.
+    </p>
+    <p style="font-size:12px;color:#374151;line-height:1.65;">
+      <strong>Belangrijk:</strong> de transitie werkt niet door te snijden in performance — maar door brand toe te voegen vanuit vrijgespeeld, laag-incrementeel performance-budget. Incrementaliteitstest op de top performance-kanalen is de eerste stap.
+    </p>
+  `;
+  window.print();
+}
+
+function contactHH() {
+  // Email built in parts to prevent proxy encoding
+  const u = 'hallo', d = 'happyhorizon' + '.com';
+  const sub = encodeURIComponent('Brand & Budget Tool — gesprek inplannen');
+  const body = encodeURIComponent('Hallo,\n\nIk heb de Brand & Budget Tool ingevuld en wil graag een gesprek.\n\nGroet');
+  window.open('mailto:' + u + '@' + d + '?subject=' + sub + '&body=' + body, '_blank');
+}
+</script>
+</body>
+</html>
